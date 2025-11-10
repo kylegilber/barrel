@@ -1,0 +1,10 @@
+---
+title: ""
+author: "Kyle Gilbert"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    latex_engine: pdflatex
+    number_sections: true
+---
+
