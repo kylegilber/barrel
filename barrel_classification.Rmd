@@ -31,3 +31,30 @@ pacman::p_load(dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger, utils)
 # Read in Big 10 batted-ball data
 data <- read.csv("data.csv")
 ```
+
+```{r preprocessing}
+
+#| echo: false
+#| warning: false
+#| output: false
+
+# Compute exit velocity mean & sd
+meanEV <- mean(df$EV, na.rm = TRUE)
+sdEV <- sd(df$EV, na.rm = TRUE)
+
+df <- df %>%
+  mutate(
+    Hit = PlayResult %in% c("Single", "Double", "Triple", "HomeRun"),
+    Bases = case_when(
+      PlayResult == "Single"  ~ 1,
+      PlayResult == "Double"  ~ 2,
+      PlayResult == "Triple"  ~ 3,
+      PlayResult == "HomeRun" ~ 4,
+      TRUE ~ 0
+    )
+  ) %>% 
+  filter(
+    EV >= (meanEV - 2 * sdEV), # ~2.5th percentile
+    EV <= (meanEV + 2 * sdEV)  # ~97.5th percentile
+  )
+```
