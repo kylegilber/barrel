@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "Modeling Barrel Classification in Big Ten College Baseball"
 author: "Kyle Gilbert"
 date: "`r Sys.Date()`"
 output: 
@@ -8,3 +8,15 @@ output:
     number_sections: true
 ---
 
+```{r dependencies}
+
+#| echo: false
+#| message: false
+#| warning: false
+
+# Install pacman package
+if (!require("pacman")) install.packages("pacman")
+
+# Load all packages, installing if necessary
+pacman::p_load(dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger)
+```
