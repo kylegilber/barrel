@@ -21,7 +21,7 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger, utils)
 ```
 
-```{r load data}
+```{r load-data}
 
 #| echo: false
 #| message: false
@@ -42,7 +42,7 @@ data <- read.csv("data.csv")
 meanEV <- mean(df$EV, na.rm = TRUE)
 sdEV <- sd(df$EV, na.rm = TRUE)
 
-df <- df %>%
+data <- data %>%
   mutate(
     Hit = PlayResult %in% c("Single", "Double", "Triple", "HomeRun"),
     Bases = case_when(
@@ -57,4 +57,60 @@ df <- df %>%
     EV >= (meanEV - 2 * sdEV), # ~2.5th percentile
     EV <= (meanEV + 2 * sdEV)  # ~97.5th percentile
   )
+```
+
+```{r model-evaluation-function}
+
+#| echo: false
+#| warning: false
+#| message: false
+
+# Evaluate model performance for regression or classification tasks
+evaluate_model <- function(actual, predicted) {
+  
+  # Determine if regression or classification
+  isRegression <- is.numeric(actual) && length(unique(actual)) > 2
+  
+  if(isRegression) {
+    
+    # Regression metrics
+    tibble(
+      mae = mean(abs(actual - predicted), na.rm = TRUE),
+      rmse = sqrt(mean((actual - predicted)^2, na.rm = TRUE)),
+      correlation = cor(actual, predicted, use = "complete.obs"),
+      rSquared = correlation^2
+    )
+    
+  } else {
+    
+    # Thresholding (probability -> binary class labels)
+    predictedClass = ifelse(predicted >= 0.5, 1, 0)
+    
+    # Confusion matrix
+    tp = sum(predictedClass == 1 & actual == 1) # True positive
+    fp = sum(predictedClass == 1 & actual == 0) # False positive
+    tn = sum(predictedClass == 0 & actual == 0) # True negative
+    fn = sum(predictedClass == 0 & actual == 1) # False negative
+    
+    # Compute performance metrics
+    accuracy = (tp + tn) / (tp + fp + tn + fn)
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    aucVal = auc(actual, predicted)
+    f1 = ifelse(
+      is.na(precision) | is.na(recall) | (precision + recall) == 0,
+      NA, 2 * (precision * recall) / (precision + recall)
+    )
+    
+    # Classification metrics
+    tibble(
+      accuracy = accuracy,
+      precision = precision,
+      recall = recall,
+      f1 = f1,
+      auc = as.numeric(aucVal)
+    )
+  }
+}
+
 ```
