@@ -18,5 +18,16 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Load all packages, installing if necessary
-pacman::p_load(dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger)
+pacman::p_load(dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger, utils)
+```
+
+```{r load data}
+
+#| echo: false
+#| message: false
+#| warning: false
+#| output: false
+
+# Read in Big 10 batted-ball data
+data <- read.csv("data.csv")
 ```
