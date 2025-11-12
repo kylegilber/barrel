@@ -150,3 +150,29 @@ cross_validate <- function(data, k, modelFn, responseVar) {
 }
 ```
 
+```{r model functions}
+
+# Model-fitting functions for cross-validation
+
+# Fit GAM for expected batting average (xBA)
+# Predicts hit probability using smooth terms for EV & LA
+fit_xBA <- function(train) {
+  gam(
+    Hit ~ s(EV) + s(LA) + ti(EV + LA),
+    data = train,
+    family = binomial,
+    method = "REML"
+  )
+}
+
+# Fit GAM for expected slugging percentage (xSLG)
+# Predicts # bases using smooth terms for EV & LA
+fit_xSLG <- function(train) {
+  gam(
+    Bases ~ s(EV) + s(LA) + ti(EV + LA),
+    data = train,
+    family = gaussian,
+    method = "REML"
+  )
+}
+```
