@@ -39,8 +39,8 @@ data <- read.csv("data.csv")
 #| message: false
 
 # Compute exit velocity mean & sd
-meanEV <- mean(df$EV, na.rm = TRUE)
-sdEV <- sd(df$EV, na.rm = TRUE)
+meanEV <- mean(data$EV, na.rm = TRUE)
+sdEV <- sd(data$EV, na.rm = TRUE)
 
 data <- data %>%
   mutate(
@@ -150,15 +150,19 @@ cross_validate <- function(data, k, modelFn, responseVar) {
 }
 ```
 
-```{r model functions}
+```{r model-functions}
+
+#| echo: false
+#| message: false
+#| warning: false
 
 # Model-fitting functions for cross-validation
 
 # Fit GAM for expected batting average (xBA)
 # Predicts hit probability using smooth terms for EV & LA
-fit_xBA <- function(train) {
+xbaFit <- function(train) {
   gam(
-    Hit ~ s(EV) + s(LA) + ti(EV + LA),
+    Hit ~ s(EV) + s(LA) + ti(EV, LA),
     data = train,
     family = binomial,
     method = "REML"
@@ -167,12 +171,48 @@ fit_xBA <- function(train) {
 
 # Fit GAM for expected slugging percentage (xSLG)
 # Predicts # bases using smooth terms for EV & LA
-fit_xSLG <- function(train) {
+xslgFit <- function(train) {
   gam(
-    Bases ~ s(EV) + s(LA) + ti(EV + LA),
+    Bases ~ s(EV) + s(LA) + ti(EV, LA),
     data = train,
     family = gaussian,
     method = "REML"
   )
 }
+```
+
+```{r model-evaluation}
+
+#| echo: false
+#| message: false
+#| warning: false
+
+# Perform cross validation for xBA model
+xbaResults <- cross_validate(
+  data = data,
+  k = 5,
+  modelFn = xbaFit,
+  responseVar = "Hit"
+)
+
+# Perform cross validation for xSLG model
+xslgResults <- cross_validate(
+  data = data,
+  k = 5,
+  modelFn = xslgFit,
+  responseVar = "Bases"
+)
+
+# Summarize performance across folds
+summarize_results <- function(results) {
+   results %>% 
+    summarize(across(everything(), mean, na.rm = TRUE)) %>%  
+    mutate(across(where(is.numeric), ~round(.x, 3)))
+}
+
+# Calculate mean of performance metrics
+xbaSummary <- summarize_results(xbaResults) %>% 
+  mutate(model = "xBA", .before = 1)
+xslgSummary <- summarize_results(xslgResults) %>% 
+  mutate(model = "xSLG", .before = 1)
 ```
