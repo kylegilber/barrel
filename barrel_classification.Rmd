@@ -36,7 +36,7 @@ data <- read.csv("data.csv")
 
 #| echo: false
 #| warning: false
-#| output: false
+#| message: false
 
 # Compute exit velocity mean & sd
 meanEV <- mean(df$EV, na.rm = TRUE)
@@ -112,5 +112,41 @@ evaluate_model <- function(actual, predicted) {
     )
   }
 }
-
 ```
+
+```{r cross-validation-function}
+
+#| echo: false
+#| warning: false
+#| message: false
+
+# Perform k-fold cross-validation and return performance metrics
+cross_validate <- function(data, k, modelFn, responseVar) {
+  
+  # Stratified k-fold splits
+  folds <- vfold_cv(data, v = k, strata = responseVar)
+  
+  # Evaluate model on each fold
+  results <- map_dfr(folds$splits, function(fold) {
+    
+    # Derive train-test splits
+    train <- analysis(fold)
+    test <- assessment(fold)
+    
+    # Fit model on training data
+    model <- modelFn(train)
+    
+    # Generate predictions on test data
+    predictions <- predict(model, newdata = test, type = "response")
+    
+    # Extract actual values
+    actual <- test[[responseVar]]
+    
+    # Evaluate prediction performance
+    evaluate_model(actual, predictions)
+  })
+  
+  return(results)
+}
+```
+
