@@ -18,7 +18,10 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Load all packages, installing if necessary
-pacman::p_load(dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger, utils)
+pacman::p_load(
+  dplyr, mgcv, ggplot2, pROC, rsample, purrr, stats, ranger, utils, knitr,
+  kableExtra
+)
 ```
 
 ```{r load-data}
@@ -203,16 +206,52 @@ xslgResults <- cross_validate(
   responseVar = "Bases"
 )
 
-# Summarize performance across folds
-summarize_results <- function(results) {
-   results %>% 
+# Create summary table of CV results
+toSummaryTable <- function(results) {
+  
+  # Summarize performance across folds
+  summaryRow <- results %>% 
     summarize(across(everything(), mean, na.rm = TRUE)) %>%  
     mutate(across(where(is.numeric), ~round(.x, 3)))
+  
+  # Add fold numbers to results
+  results <- results %>% 
+    mutate(Fold = paste("Fold", row_number()), .before = 1)
+  
+  # Combine results and means
+  bind_rows(
+    results,
+    summaryRow %>% mutate(Fold = "Mean", .before = 1)
+  )
 }
 
-# Calculate mean of performance metrics
-xbaSummary <- summarize_results(xbaResults) %>% 
-  mutate(model = "xBA", .before = 1)
-xslgSummary <- summarize_results(xslgResults) %>% 
-  mutate(model = "xSLG", .before = 1)
+# Display xBA results
+xbaResults %>% 
+  toSummaryTable %>% 
+  kable(
+    caption = "Expected Batting Average (xBA) Model Performance",
+    digits = 3,
+    col.names = c("","Accuracy", "Precision", "Recall", "F1 Score", "AUC")
+  ) %>% 
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position = "center",
+    html_font = "Cambria"
+  )
+
+# Display xSLG results
+xslgResults %>% 
+  toSummaryTable %>% 
+  kable(
+    caption = "Expected Slugging Percentage (xSLG) Model Performance",
+    digits = 3,
+    col.names = c("","MAE", "RMSE", "Correlation", "R^2")
+  ) %>% 
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE,
+    position = "center",
+    html_font = "Cambria"
+  )
 ```
