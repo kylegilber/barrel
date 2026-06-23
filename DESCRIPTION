@@ -1,0 +1,16 @@
+Package: Barrel
+Type: Package
+Title: Barrel Classifier
+Version: 1.0.0
+Authors@R: c(
+    person(
+      "Kyle", "Gilbert",
+      email = "gilbert.ke@hotmail.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: Classifies a batted-ball event as a barrel based on whether its exit velocity and launch angle satisfy the defined criteria.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Config/roxygen2/version: 8.0.0
