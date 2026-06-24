@@ -17,7 +17,7 @@ offensive value.
 
 > [!NOTE]
 > `is_barrel` is trained on college baseball data. Consequently, its barrel classifications may not
-align with [MLB](https://www.mlb.com/glossary/statcast/barrel) definitions or results.
+align with [MLB][mlb-url] definitions or results.
 
 ## Installation
 
@@ -30,6 +30,34 @@ if (!requireNamespace('pak', quietly = TRUE)){
 pak::pak("kylegilber/barrelr")
 ```
 
+## Usage
+
+### Basic Example
+You can directly pass exit velocity and launch angle to `is_barrel` for quick checks.
+
+``` r
+library(barrelr)
+
+is_barrel(ev = 108.4, la = 39)
+```
+
+### DataFrame Example
+You can use `is_barrel` to create an indicator variable when working with datasets.
+
+``` r
+library(barrelr)
+library(dplyr)
+
+df <- data.frame(
+  PlayResult = c("Out", "HomeRun", "Single"),
+  ExitSpeed = c(94.3, 102.1, 100.7),
+  Angle = c(33, 29, 15)
+)
+
+df <- df %>% 
+  mutate(Barrel = is_barrel(ExitSpeed, Angle))
+```
+
 <!-- link definitions -->
 [rstudio-badge]: https://img.shields.io/badge/RStudio-75AADB?style=for-the-badge&logo=RStudio&logoColor=white
 [rstudio-url]: https://posit.co/downloads
@@ -37,3 +65,4 @@ pak::pak("kylegilber/barrelr")
 [r-url]: https://www.r-project.org/
 [linkedin-badge]: https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white
 [linkedin-url]: https://www.linkedin.com/in/kylegilbertpsu/
+[mlb-url]: https://www.mlb.com/glossary/statcast/barrel
